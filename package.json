@@ -1,5 +1,5 @@
 {
-  "name": "sequelize-wrapper",
+  "name": "ljx-sequelize-wrapper",
   "version": "0.0.1",
   "description": "a decoration of sequelize, easy to use the basic method",
   "main": "index.js",
@@ -10,7 +10,7 @@
     "sequelize",
     "mysql"
   ],
-  "author": "charlesLiu",
+  "author": "jiaxi0331",
   "license": "MIT",
   "devDependencies": {
     "lodash": "^4.17.4"
