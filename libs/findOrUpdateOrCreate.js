@@ -1,7 +1,8 @@
 const
   _ = require('lodash'),
   util = require('./utils'),
-  models = {}
+  {models} = require(`${process.cwd()}/models`)
+
 /**
  * 查找相关的数据, 更新或者插入
  * @param {object} source source model

@@ -3,13 +3,8 @@ const
   queryMap = require('./queryMap'),
   _ = require('lodash'),
   findOrCreateOrUpdate = require('./findOrUpdateOrCreate'),
-  userUpdate = require('./userUpdate')
-
-/*
- * 默认参数定义
- */
-const defaultDuration = 300,
-  dftTTL = 300
+  userUpdate = require('./userUpdate'),
+  {models} = require(`${process.cwd()}/models`)
 
 const queryRegStr = Object.keys(queryMap).map(k => k).join('|')
 const regOr = new RegExp(`_or_(${queryRegStr})$`)
@@ -22,7 +17,7 @@ const reg = new RegExp(`_(${queryRegStr})$`)
  */
 
 class Model {
-  constructor (model, user, models) {
+  constructor (model, user) {
     this.model = models[model]
     this.options = {
       include: [],
@@ -541,7 +536,7 @@ function includeHandler (k, v) {
 /**
  * 处理 request 中的 include 查询, 绑定 wherestring 参数
  * @param {array} include, wherestring 中的 include 对象
- * @param {array} mds, 嵌套的 models 的名称
+ * @param {array} mds, 嵌套的 libs 的名称
  * @param {string} field, 字段名称 ( 未处理过的 )
  * @param {string} v, 参数的值
  * @return {void}
