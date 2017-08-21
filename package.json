@@ -6,6 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dadiaoguai/sequelize-wrapper.git"
+  },
   "keywords": [
     "sequelize",
     "mysql"
