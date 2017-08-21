@@ -13,5 +13,3 @@ let attrs = ['$all','field1','field2','include.schema1.field1,field2','include.s
 
 model.setWherestr(args).setAttributes(attrs).cachefy().all()
 ```
-
-sdafjsajfldsa
