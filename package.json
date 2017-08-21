@@ -1,0 +1,22 @@
+{
+  "name": "sequelize-wrapper",
+  "version": "0.0.1",
+  "description": "a decoration of sequelize, easy to use the basic method",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sequelize",
+    "mysql"
+  ],
+  "author": "charlesLiu",
+  "license": "MIT",
+  "devDependencies": {
+    "lodash": "^4.17.4"
+  },
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "moment": "^2.18.1"
+  }
+}
