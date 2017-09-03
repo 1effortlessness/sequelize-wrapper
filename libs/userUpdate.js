@@ -9,14 +9,14 @@ const _ = require('lodash')
  * @this model
  */
 function userUpdate (args, user, type = 'create') {
+  if (!this.attributes.includes('createdUsr') || !this.attributes.includes('updatedUsr')) {
+    return args
+  }
+
   if (_.isEmpty(user)) {
     throw new Error('未登录')
   } else {
     user = user.id || user
-  }
-
-  if (!this.attributes.includes('createdUsr') || !this.attributes.includes('updatedUsr')) {
-    return args
   }
 
   if (_.isArray(args)) {

@@ -3,8 +3,7 @@ const
   queryMap = require('./queryMap'),
   _ = require('lodash'),
   findOrCreateOrUpdate = require('./findOrUpdateOrCreate'),
-  userUpdate = require('./userUpdate'),
-  {models} = require(`${process.cwd()}/models`)
+  userUpdate = require('./userUpdate')
 
 const queryRegStr = Object.keys(queryMap).map(k => k).join('|')
 const regOr = new RegExp(`_or_(${queryRegStr})$`)
@@ -17,7 +16,7 @@ const reg = new RegExp(`_(${queryRegStr})$`)
  */
 
 class Model {
-  constructor (model, user) {
+  constructor (models, model, user) {
     this.model = models[model]
     this.options = {
       include: [],
