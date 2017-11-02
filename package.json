@@ -1,6 +1,6 @@
 {
   "name": "ljx-sequelize-wrapper",
-  "version": "0.0.4",
+  "version": "0.0.8",
   "description": "a decoration of sequelize, easy to use the basic method",
   "main": "./libs/index.js",
   "scripts": {

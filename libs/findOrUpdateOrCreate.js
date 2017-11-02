@@ -1,7 +1,6 @@
 const
   _ = require('lodash'),
-  util = require('./utils'),
-  {models} = require(`${process.cwd()}/models`)
+  util = require('./utils')
 
 /**
  * 查找相关的数据, 更新或者插入
@@ -14,7 +13,7 @@ const
  */
 async function one2one (source, model, args = {}, t) {
   let sourceId = `${this.name}Id`
-  let previous = await models[model].findOne({
+  let previous = await this.models[model].findOne({
     where: {[sourceId]: source.id},
     transaction: t
   })
@@ -22,7 +21,7 @@ async function one2one (source, model, args = {}, t) {
   if (!args.hasOwnProperty(sourceId)) {
     args[sourceId] = source.id
   }
-  let insert = await util.insertOrUpdate(models[model], args, t)
+  let insert = await util.insertOrUpdate(this.models[model], args, t)
 
   if (insert) {
     await previous.update({[sourceId]: null}, {transaction: t})
@@ -40,7 +39,7 @@ async function one2one (source, model, args = {}, t) {
  */
 async function one2many (source, model, args = [], t) {
   let sourceId = `${this.name}Id`
-  let previous = await models[model].findAll({
+  let previous = await this.models[model].findAll({
     where: {[sourceId]: source.id},
     transaction: t
   })
@@ -53,7 +52,7 @@ async function one2many (source, model, args = [], t) {
     }
   })
   if (deletedIds.length !== 0) {
-    await models[model].update({[sourceId]: null}, {
+    await this.models[model].update({[sourceId]: null}, {
       where: {id: {$in: deletedIds}},
       transaction: t
     })
@@ -64,7 +63,7 @@ async function one2many (source, model, args = [], t) {
       arg[sourceId] = source.id
     }
 
-    await util.insertOrUpdate(models[model], arg, t)
+    await util.insertOrUpdate(this.models[model], arg, t)
   }
 }
 
@@ -83,8 +82,8 @@ async function many2many (source, model, args = [], t) {
 
   if (args.every(arg => _.isObject(arg))) {
     for (let arg of args) {
-      await $.insertOrUpdate(models[model], arg, t)
-      let obj = await models[model].findOne({
+      await $.insertOrUpdate(this.models[model], arg, t)
+      let obj = await this.models[model].findOne({
         where: arg,
         transaction: t
       })
@@ -94,7 +93,7 @@ async function many2many (source, model, args = [], t) {
       }
     }
   } else {
-    current = await models[model].findAll({
+    current = await this.models[model].findAll({
       where: {id: {$in: args}},
       transaction: t
     })

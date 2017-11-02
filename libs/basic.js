@@ -26,6 +26,7 @@ class Model {
     this.associations = this.model.associations
     this.name = model
     this.user = user
+    this.models = models
   }
 
   /*
@@ -229,7 +230,7 @@ class Model {
       subQuery: false
     }
 
-    return objs
+    return pagination ? {objs: objs.rows, count: objs.count} : objs
   }
 
 
@@ -460,7 +461,7 @@ function _queryField2where (container, k, v, md) {
   if (reg.test(k) && !regOr.test(k) && !regOrAnd.test(k)) {
     field = k.replace(reg, '')
     if (md) { // 判断k是否在该表中
-      if (!Object.keys(models[md].attributes).includes(field)) {
+      if (!Object.keys(this.models[md].attributes).includes(field)) {
         return
       }
     } else {
@@ -508,7 +509,7 @@ function _queryField2where (container, k, v, md) {
     } else {
       container.$or = [{$and: [x]}]
     }
-  } else if (this.attributes.includes(k) || md && Object.keys(models[md].attributes).includes(k)) {
+  } else if (this.attributes.includes(k) || md && Object.keys(this.models[md].attributes).includes(k)) {
     container[k] = v
   }
 }
@@ -591,7 +592,7 @@ function _includeModelFactory (obj, mds, field, v) {
     Field = field.replace(regOrAnd, '')
   }
 
-  obj.model = models[md]
+  obj.model = this.models[md]
   if (mds.length === 0) {
     obj.attributes = ['id', Field]
     obj.where = {}
@@ -697,7 +698,7 @@ function nestHandler (include, list) {
   let md = attributes[0]
 
   let model = {
-    model: models[md],
+    model: this.models[md],
     include: []
   }
   let existModel = _.find(include, m => m.model.name === md)
