@@ -3,7 +3,8 @@ const
   queryMap = require('./queryMap'),
   _ = require('lodash'),
   findOrCreateOrUpdate = require('./findOrUpdateOrCreate'),
-  userUpdate = require('./userUpdate')
+  userUpdate = require('./userUpdate'),
+  pluralize = require('pluralize')
 
 const queryRegStr = Object.keys(queryMap).map(k => k).join('|')
 const regOr = new RegExp(`_or_(${queryRegStr})$`)
@@ -283,10 +284,17 @@ class Model {
 
     if (!_.isEmpty(includes)) {
       for (let model of includes) {
-        let includeArgs = args[model] || args[model.pluralize()]
-        
-        await findOrCreateOrUpdate.call(this, obj, model, includeArgs, t)
+        let includeArgs = args[model] || args[pluralize.plural(model)]
+
+        if (!_.isEmpty(includeArgs)) {
+          await findOrCreateOrUpdate.call(this, obj, model, includeArgs, t)
+        }
       }
+    }
+
+    this.options = {
+      include: [],
+      subQuery: false
     }
 
     return obj.update(updatedArgs, {transaction: t})
@@ -346,10 +354,17 @@ class Model {
 
     if (!_.isEmpty(includes)) {
       for (let model of includes) {
-        let includeArgs = args[model] || args[model.pluralize()]
+        let includeArgs = args[model] || args[pluralize.plural(model)]
 
-        await findOrCreateOrUpdate.call(this, obj, model, includeArgs, t)
+        if (!_.isEmpty(includeArgs)) {
+          await findOrCreateOrUpdate.call(this, obj, model, includeArgs, t)
+        }
       }
+    }
+
+    this.options = {
+      include: [],
+      subQuery: false
     }
 
     return obj

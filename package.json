@@ -1,6 +1,6 @@
 {
   "name": "ljx-sequelize-wrapper",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "a decoration of sequelize, easy to use the basic method",
   "main": "./libs/index.js",
   "scripts": {
@@ -20,6 +20,7 @@
     "lodash": "^4.17.4"
   },
   "dependencies": {
-    "moment": "^2.18.1"
+    "moment": "^2.18.1",
+    "pluralize": "^7.0.0"
   }
 }

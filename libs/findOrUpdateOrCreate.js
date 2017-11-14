@@ -1,6 +1,7 @@
 const
   _ = require('lodash'),
-  util = require('./utils')
+  util = require('./utils'),
+  pluralize = require('pluralize')
 
 /**
  * 查找相关的数据, 更新或者插入
@@ -77,7 +78,7 @@ async function one2many (source, model, args = [], t) {
  * @this model
  */
 async function many2many (source, model, args = [], t) {
-  let pluralModel = model.pluralize()
+  let pluralModel = pluralize.plural(model)
   let current = []
 
   if (args.every(arg => _.isObject(arg))) {
@@ -112,7 +113,7 @@ async function many2many (source, model, args = [], t) {
  * @this model
  */
 async function findOrUpdateOrCreate (source, model, args, t) {
-  let association = this.associations[model] || this.associations[model.pluralize()]
+  let association = this.associations[model] || this.associations[pluralize.plural(model)]
 
   switch (association.associationType) {
     case 'HasOne':
