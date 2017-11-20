@@ -1,6 +1,6 @@
 const
   _ = require('lodash'),
-  util = require('./utils'),
+  util = require('../common/utils'),
   pluralize = require('pluralize')
 
 /**
@@ -83,7 +83,7 @@ async function many2many (source, model, args = [], t) {
 
   if (args.every(arg => _.isObject(arg))) {
     for (let arg of args) {
-      await $.insertOrUpdate(this.models[model], arg, t)
+      await util.insertOrUpdate(this.models[model], arg, t)
       let obj = await this.models[model].findOne({
         where: arg,
         transaction: t
