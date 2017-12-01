@@ -273,11 +273,20 @@ class Model {
       this.options.transaction = t
     }
 
+    let obj
+
     if (_.isObject(wherestr)) {
-      return this.model.update(updatedArgs, this.options)
+      obj =  this.model.update(updatedArgs, this.options)
+
+      this.options = {
+        include: [],
+        subQuery: false
+      }
+
+      return obj
     }
     
-    let obj = await this.model.findOne({
+    obj = await this.model.findOne({
       where: {id: wherestr},
       transaction: t
     })
@@ -334,11 +343,18 @@ class Model {
 
     clearArgs = userUpdate.call(this, clearArgs, this.user, 'create')
 
-    if (_.isArray(clearArgs)) {
-      return this.model.bulkCreate(clearArgs, {transaction: t})
-    }
-
     let obj
+
+    if (_.isArray(clearArgs)) {
+      obj =  this.model.bulkCreate(clearArgs, {transaction: t})
+
+      this.options = {
+        include: [],
+        subQuery: false
+      }
+
+      return obj
+    }
 
     if (clearArgs.hasOwnProperty('id')) {
       obj = await this.model.findOne({where: {id: clearArgs.id}, transaction: t})
