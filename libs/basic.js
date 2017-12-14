@@ -1,5 +1,7 @@
 const
   common = require('../common/basic'),
+  utils = require('../common/utils'),
+  Op = require('sequelize').Op,
   queryMap = require('./queryMap'),
   _ = require('lodash'),
   findOrCreateOrUpdate = require('./findOrUpdateOrCreate'),
@@ -28,6 +30,7 @@ class Model {
     this.name = model
     this.user = user
     this.models = models
+    this.args
   }
 
   /*
@@ -36,7 +39,7 @@ class Model {
    *
    * @return {object}
    */
-  setOptions (opts) {
+  opts (opts) {
     this.options = opts
 
     return this
@@ -48,26 +51,16 @@ class Model {
    * @param {boolean} page 是否处理 limit 和 offset
    * @return {object}
    */
-  setWherestr (wherestr, page = true) {
+  where (wherestr, page = true) {
+    if (wherestr.hasOwnProperty('limit')) {
+      wherestr.limit = parseInt(wherestr.limit) || 0
+    }
+    if (wherestr.hasOwnProperty('offset')) {
+      wherestr.offset = parseInt(wherestr.offset) || 0
+    }
+    this.args = wherestr
+
     this.options.where = whereHandler.call(this, wherestr, page)
-    return this
-  }
-
-  /*
-   * 设置 limit 属性
-   */
-  setLimit (limit) {
-    this.options.limit = limitFactory(limit)
-
-    return this
-  }
-
-  /*
-   * 设置 offset 属性
-   */
-  setOffset (offset) {
-    this.options.offset = offsetFactory(offset)
-
     return this
   }
 
@@ -77,7 +70,7 @@ class Model {
    *
    * @return {object}
    */
-  setOrder (orders) {
+  order (orders) {
     if (_.has(this.options, 'order')) {
       let mul = false
 
@@ -102,7 +95,7 @@ class Model {
    *
    * @return {object}
    */
-  setGroup (group) {
+  group (group) {
     if (_.has(this.options, 'group')) {
       if (_.isArray(group)) {
         group.forEach(g => this.options.group.push(g))
@@ -129,7 +122,7 @@ class Model {
    *
    * @return {object}
    */
-  setAttributes (attr) {
+  attrs (attr) {
     attrFactory.call(this, attr)
 
     return this
@@ -138,7 +131,7 @@ class Model {
   /*
    * 添加属性
    */
-  addAttributes (attrs) {
+  addAttrs (attrs) {
     if (_.isArray(attrs)) {
       if (!this.options.attributes) {
         this.options.attributes = {include: []}
@@ -154,7 +147,7 @@ class Model {
   /*
    * 添加 include 属性
    */
-  setInclude (include) {
+  include (include) {
     this.options.include = include
 
     return this
@@ -163,7 +156,7 @@ class Model {
   /*
    * 添加事务
    */
-  setTransaction (t) {
+  transaction (t) {
     this.options.transaction = t
 
     return this
@@ -172,12 +165,11 @@ class Model {
   /**
    * findOne
    * @param {boolean} existedRequired, 值是否允许为空
+   * @param {boolean} toJSON, 是否返回 json 化数据
    * @param {any} t, 事务信标
-   * @param {boolean} cache, 是否缓存
-   * @param {integer} ttl, 缓存存货时间
    * @return {promise}
    */
-  async one (existedRequired = true, t) {
+  async one (existedRequired = true, toJSON = false, t) {
     // console.log(util.inspect(this.options, false, null))
     // if (config.cache && cache && this.model.constructor.name !== 'Cacher') {
     //   this.model = Cacher.model(this.name).ttl(ttl)
@@ -197,18 +189,17 @@ class Model {
       subQuery: false
     }
 
-    return obj
+    return toJSON ? obj.toJSON() : obj
   }
 
   /**
    * findAll
    * @param {boolean} pagination, 是否携带 count, default = false
-   * @param {any} t, 事务信标
-   * @param {boolean} cache, 是否缓存
-   * @param {integer} ttl, 缓存存货时间
+   * @param {boolean} toJSON, 是否返回json格式的数据
+   * @param {integer} t, 事务信标
    * @return {promise}
    */
-  async all (pagination = false, t = null) {
+  async all (pagination = false, toJSON = true, t = null) {
     let objs
     // console.log(util.inspect(this.options, false, null))
 
@@ -221,9 +212,17 @@ class Model {
     }
 
     if (pagination) {
+      if (this.args.hasOwnProperty('limit')) {
+        this.options.limit = this.args.limit
+      }
+      if (this.args.hasOwnProperty('offset')) {
+        this.options.offset = this.args.offset
+      }
+
       objs = await this.model.findAndCount(this.options)
     } else {
       objs = await this.model.findAll(this.options)
+      objs = utils.pagination(objs, this.args)
     }
 
     this.options = {
@@ -231,7 +230,10 @@ class Model {
       subQuery: false
     }
 
-    return pagination ? {objs: objs.rows, count: objs.count} : objs
+    if (pagination) {
+      return {objs: toJSON ? objs.rows.map(obj => obj.toJSON()) : objs.rows, count: objs.count}
+    } 
+    return toJSON ? objs.map(obj => obj.toJSON) : objs
   }
 
 
@@ -449,22 +451,18 @@ class Model {
  * e.x: {a: 1,b: > 2,c: 3 2?fuzzyMatch}
  * account.wallet, 含有 '.', 会进入 include 处理程序
  * @param {object} obj 待处理的目标
- * @param {boolean} page 是否自动处理 limit 和 offset 属性
  * @return {object}
  * @this Model
  */
-function whereHandler (obj, page) {
+function whereHandler (obj) {
   let result = {}
 
   Object.keys(obj).forEach(k => {
     if (this.attributes.some(field => k.startsWith(field))) {
       _queryField2where.call(this, result, k, obj[k])
     }
-    if (k === 'limit' && page) {
-      this.options.limit = parseInt(obj[k])
-    }
-    if (k === 'offset' && page) {
-      this.options.offset = parseInt(obj[k])
+    if (k === 'limit' || k === 'offset') {
+      return
     }
     if (k.match(/\.\w+/)) {
       includeHandler.call(this, k, obj[k])
@@ -505,9 +503,9 @@ function _queryField2where (container, k, v, md) {
     if (container[field]) {
       let tempValue = container[field]
 
-      container[field] = {$or: {}}
-      container[field].$or[queryMap[query].name] = queryMap[query].handler(v)
-      _.isObject(tempValue) ? _.assign(container[field].$or, tempValue) : container[field].$or.$eq = tempValue
+      container[field] = {[Op.or]: {}}
+      container[field][Op.or][queryMap[query].name] = queryMap[query].handler(v)
+      _.isObject(tempValue) ? _.assign(container[field][Op.or], tempValue) : container[field][Op.or][Op.eq] = tempValue
     } else {
       container[field] = {}
       container[field][queryMap[query].name] = queryMap[query].handler(v)
@@ -522,7 +520,7 @@ function _queryField2where (container, k, v, md) {
 
     x[field] = {}
     x[field][queryMap[query].name] = queryMap[query].handler(v)
-    _.isArray(container.$or) ? container.$or.push(x) : container.$or = [x]
+    _.isArray(container[Op.or]) ? container[Op.pr].push(x) : container[Op.or] = [x]
   } else if (regOrAnd.test(k)) {
     field = k.replace(regOrAnd, '')
     if (!this.attributes.includes(field)) {
@@ -533,12 +531,12 @@ function _queryField2where (container, k, v, md) {
 
     x[field] = {}
     x[field][queryMap[query].name] = queryMap[query].handler(v)
-    if (_.isArray(container.$or)) {
-      let condition = _.find(container.$or, i => _.has(i, '$and'))
+    if (_.isArray(container[Op.or])) {
+      let condition = _.find(container[Op.or], i => _.has(i, Op.and))
 
-      condition ? condition.$and.push(x) : container.$or.push({$and: [x]})
+      condition ? condition[Op.and].push(x) : container[Op.or].push({[Op.and]: [x]})
     } else {
-      container.$or = [{$and: [x]}]
+      container[Op.or] = [{[Op.and]: [x]}]
     }
   } else if (this.attributes.includes(k) || md && Object.keys(this.models[md].attributes).includes(k)) {
     container[k] = v
@@ -640,38 +638,6 @@ function _includeModelFactory (obj, mds, field, v) {
 }
 
 /**
- * 处理 limit 属性
- * @param {object} obj 参数对象
- * @return {void}
- */
-function limitFactory (obj) {
-  let result
-
-  Object.keys(obj).forEach(k => {
-    if (k === 'limit') {
-      result = parseInt(obj[k])
-    }
-  })
-  return result
-}
-
-/**
- * 处理 offset 属性
- * @param {object} obj 参数对象
- * @return {void}
- */
-function offsetFactory (obj) {
-  let result
-
-  Object.keys(obj).forEach(k => {
-    if (k === 'offset') {
-      result = parseInt(obj[k])
-    }
-  })
-  return result
-}
-
-/**
  * 属性加工, 输入想要展示的字段, include.为嵌套字段, e.x: include.account.wallet.id,username&id=1&required
  * $all, 表示展示全部的字段
  * $null, 表示什么字段也不展示,
@@ -764,15 +730,23 @@ function _nestModelFactory (model, v) {
       model.where = {}
     }
     args.split('&').forEach(arg => {
+      if (arg === 'as') {
+        let field, value
+
+        [field, value] = arg.split('=')
+        model[field] = value
+        return
+      }
       if (arg !== 'required') {
         let field, value
 
         [field, value] = arg.split('=')
         _queryField2where.call(this, model.where, field, value, model.model.name)
       }
+
     })
 
-    args.endsWith('required') ? model.required = true : model.required = false
+    args.includes('required') ? model.required = true : model.required = false
   }
 
   if (attrs === '$null') {

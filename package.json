@@ -1,7 +1,7 @@
 {
   "name": "ljx-sequelize-wrapper",
-  "version": "0.1.12",
-  "description": "a decoration of sequelize, easy to use the basic method",
+  "version": "0.2.0",
+  "description": "a decoration of sequelize, easy to use the basic method, 3.x 适配 ^0.1.12, 4.x 适配 0.2+",
   "main": "./libs/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "moment": "^2.18.1",
-    "pluralize": "^7.0.0"
+    "pluralize": "^7.0.0",
+    "sequelize": "^4.28.1"
   }
 }

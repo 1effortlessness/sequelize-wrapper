@@ -1,56 +1,57 @@
 const _ = require('lodash')
+const Op = require('sequelize').Op
 
 module.exports = {
   gt: {
-    name: '$gt',
+    name: Op.gt,
     handler: x => x
   },
   gte: {
-    name: '$gte',
+    name: Op.gte,
     handler: x => x
   },
   lt: {
-    name: '$lt',
+    name: Op.lt,
     handler: x => x
   },
   lte: {
-    name: '$lte',
+    name: Op.lte,
     handler: x => x
   },
   ne: {
-    name: '$ne',
+    name: Op.ne,
     handler: x => x
   },
   eq: {
-    name: '$eq',
+    name: Op.eq,
     handler: x => x
   },
   not: {
-    name: '$not',
+    name: Op.not,
     handler: x => x
   },
   between: {
-    name: '$between',
+    name: Op.between,
     handler: x => _.isArray(x) ? x : x.split(',')
   },
   notBetween: {
-    name: '$notBetween',
+    name: Op.notBetween,
     handler: x => _.isArray(x) ? x : x.split(',')
   },
   in: {
-    name: '$in',
+    name: Op.in,
     handler: x => _.isArray(x) ? x : x.split(',')
   },
   notIn: {
-    name: '$notIn',
+    name: Op.notIn,
     handler: x => _.isArray(x) ? x : x.split(',')
   },
   like: {
-    name: '$like',
+    name: Op.like,
     handler: x => `%${x.split(' ').join('%')}%`
   },
   notLike: {
-    name: '$notLike',
+    name: Op.notLike,
     handler: x => `%${x.split(' ').join('%')}%`
   }
 }
