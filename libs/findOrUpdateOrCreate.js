@@ -1,7 +1,8 @@
 const
   _ = require('lodash'),
   util = require('../common/utils'),
-  pluralize = require('pluralize')
+  pluralize = require('pluralize'),
+  Op = require('sequelize').Op
 
 /**
  * 查找相关的数据, 更新或者插入
@@ -54,7 +55,7 @@ async function one2many (source, model, args = [], t) {
   })
   if (deletedIds.length !== 0) {
     await this.models[model].update({[sourceId]: null}, {
-      where: {id: {$in: deletedIds}},
+      where: {id: {[Op.in]: deletedIds}},
       transaction: t
     })
   }
@@ -95,7 +96,7 @@ async function many2many (source, model, args = [], t) {
     }
   } else {
     current = await this.models[model].findAll({
-      where: {id: {$in: args}},
+      where: {id: {[Op.in]: args}},
       transaction: t
     })
   }
