@@ -30,7 +30,7 @@ class Model {
     this.name = model
     this.user = user
     this.models = models
-    this.args
+    this.args = {}
   }
 
   /*
@@ -200,7 +200,7 @@ class Model {
    * @return {promise}
    */
   async all (pagination = false, toJSON = true, t = null) {
-    let objs
+    let objs, count
     // console.log(util.inspect(this.options, false, null))
 
     // if (config.cache && cache && this.model.constructor.name !== 'Cacher') {
@@ -222,6 +222,7 @@ class Model {
       objs = await this.model.findAndCount(this.options)
     } else {
       objs = await this.model.findAll(this.options)
+      count = objs.count
       objs = utils.pagination(objs, this.args)
     }
 
@@ -233,7 +234,7 @@ class Model {
     if (pagination) {
       return {objs: toJSON ? objs.rows.map(obj => obj.toJSON()) : objs.rows, count: objs.count}
     } 
-    return toJSON ? objs.map(obj => obj.toJSON) : objs
+    return {objs: toJSON ? objs.map(obj => obj.toJSON()) : objs, count}
   }
 
 
@@ -730,17 +731,15 @@ function _nestModelFactory (model, v) {
       model.where = {}
     }
     args.split('&').forEach(arg => {
-      if (arg === 'as') {
-        let field, value
+      let field, value
 
-        [field, value] = arg.split('=')
+      [field, value] = arg.split('=')
+
+      if (field === 'as') {
         model[field] = value
         return
       }
       if (arg !== 'required') {
-        let field, value
-
-        [field, value] = arg.split('=')
         _queryField2where.call(this, model.where, field, value, model.model.name)
       }
 
