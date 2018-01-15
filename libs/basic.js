@@ -21,10 +21,7 @@ const reg = new RegExp(`_(${queryRegStr})$`)
 class Model {
   constructor (models, model, user) {
     this.model = models[model]
-    this.options = {
-      include: [],
-      subQuery: false
-    }
+    this.options = {include: []}
     this.attributes = Object.keys(this.model.attributes)
     this.associations = this.model.associations
     this.name = model
@@ -184,10 +181,7 @@ class Model {
       throw new Error(`${this.model.name} 中未查询到相关数据!`)
     }
 
-    this.options = {
-      include: [],
-      subQuery: false
-    }
+    this.options = {include: []}
 
     return toJSON ? obj.toJSON() : obj
   }
@@ -222,14 +216,11 @@ class Model {
       objs = await this.model.findAndCount(this.options)
     } else {
       objs = await this.model.findAll(this.options)
-      count = objs.count
+      count = objs.length
       objs = utils.pagination(objs, this.args)
     }
 
-    this.options = {
-      include: [],
-      subQuery: false
-    }
+    this.options = {include: []}
 
     if (pagination) {
       return {objs: toJSON ? objs.rows.map(obj => obj.toJSON()) : objs.rows, count: objs.count}
@@ -281,10 +272,7 @@ class Model {
     if (_.isObject(wherestr)) {
       obj =  this.model.update(updatedArgs, this.options)
 
-      this.options = {
-        include: [],
-        subQuery: false
-      }
+      this.options = {include: []}
 
       return obj
     }
@@ -304,10 +292,7 @@ class Model {
       }
     }
 
-    this.options = {
-      include: [],
-      subQuery: false
-    }
+    this.options = {include: []}
 
     return obj.update(updatedArgs, {transaction: t})
   }
@@ -351,10 +336,7 @@ class Model {
     if (_.isArray(clearArgs)) {
       obj =  this.model.bulkCreate(clearArgs, {transaction: t})
 
-      this.options = {
-        include: [],
-        subQuery: false
-      }
+      this.options = {include: []}
 
       return obj
     }
@@ -381,10 +363,7 @@ class Model {
       }
     }
 
-    this.options = {
-      include: [],
-      subQuery: false
-    }
+    this.options = {include: []}
 
     return obj
   }
