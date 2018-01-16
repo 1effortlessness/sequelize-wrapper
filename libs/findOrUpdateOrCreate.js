@@ -64,9 +64,9 @@ async function one2many (source, model, args = [], t) {
     if (!arg.hasOwnProperty(sourceId)) {
       arg[sourceId] = source.id
     }
-
-    await util.insertOrUpdate(this.models[model], arg, t)
   }
+
+  await util.insertOrUpdate(this.models[model], args, t)
 }
 
 /**
@@ -84,11 +84,7 @@ async function many2many (source, model, args = [], t) {
 
   if (args.every(arg => _.isObject(arg))) {
     for (let arg of args) {
-      await util.insertOrUpdate(this.models[model], arg, t)
-      let obj = await this.models[model].findOne({
-        where: arg,
-        transaction: t
-      })
+      let obj = await util.insertOrUpdate(this.models[model], arg, t)
 
       if (obj) {
         current.push(obj)

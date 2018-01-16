@@ -49,15 +49,15 @@ class Model {
    * @return {object}
    */
   where (wherestr, page = true) {
-    if (wherestr.hasOwnProperty('limit')) {
-      wherestr.limit = parseInt(wherestr.limit) || 0
+    if (wherestr.hasOwnProperty('limit') && page) {
+      wherestr.limit = parseInt(wherestr.limit) || 20
     }
-    if (wherestr.hasOwnProperty('offset')) {
+    if (wherestr.hasOwnProperty('offset') && page) {
       wherestr.offset = parseInt(wherestr.offset) || 0
     }
     this.args = wherestr
 
-    this.options.where = whereHandler.call(this, wherestr, page)
+    this.options.where = whereHandler.call(this, wherestr)
     return this
   }
 
@@ -194,7 +194,7 @@ class Model {
    * @return {promise}
    */
   async all (pagination = false, toJSON = true, t = null) {
-    let objs, count
+    let objs
     // console.log(util.inspect(this.options, false, null))
 
     // if (config.cache && cache && this.model.constructor.name !== 'Cacher') {
@@ -206,26 +206,17 @@ class Model {
     }
 
     if (pagination) {
-      if (this.args.hasOwnProperty('limit')) {
-        this.options.limit = this.args.limit
-      }
-      if (this.args.hasOwnProperty('offset')) {
-        this.options.offset = this.args.offset
-      }
-
       objs = await this.model.findAndCount(this.options)
     } else {
       objs = await this.model.findAll(this.options)
-      count = objs.length
-      objs = utils.pagination(objs, this.args)
     }
 
     this.options = {include: []}
 
     if (pagination) {
       return {objs: toJSON ? objs.rows.map(obj => obj.toJSON()) : objs.rows, count: objs.count}
-    } 
-    return {objs: toJSON ? objs.map(obj => obj.toJSON()) : objs, count}
+    }
+    return toJSON ? objs.map(obj => obj.toJSON()) : objs
   }
 
 

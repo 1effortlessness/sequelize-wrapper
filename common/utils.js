@@ -12,11 +12,7 @@ exports.insertOrUpdate = async (model, args, t) => {
 
   if (_.isObject(args)) {
     if (args.hasOwnProperty('id')) {
-      let obj = await model.findById(args.id, {transaction: t})
-
-      if (obj) {
-        return obj.update(args, {transaction: t})
-      }
+      return model.upsert(args, {transaction: t})
     }
 
     return model.create(args, {transaction: t})
